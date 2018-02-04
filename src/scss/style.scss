@@ -1,7 +1,50 @@
-body{
-	background: #e7e7e7;
+@import "color_variable";
+
+body {
+    background: $mainColor;
 }
+
+.inputGroupAddon {
+    background-color: $mainColor;
+    border: 1px solid $mainColor;
+}
+
+.hasError{
+	.inputGroupAddon {
+		color: #fff;
+    	background-color: #a94442;
+    	border-color: #a94442;
+	}
+}
+
+.formControl {
+    border: 2px solid $mainColor;
+}
+
+.loading {
+    max-width: 320px;
+    height: auto;
+    min-height: 300px;
+    padding: 30px;
+    margin: 50px auto auto;
+    border-radius: 2px;
+    @media (min-width: 768px) {
+        max-width: 400px;
+    }
+}
+
 .mainlogo {
     max-width: 60%;
     padding-bottom: 77%;
+    width: 100%;
+    max-height: 110px;
+    margin: 0 auto 40px;
+    display: block;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+}
+
+.forgottenPassword {
+    margin-top: 10px;
 }

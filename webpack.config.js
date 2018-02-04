@@ -45,7 +45,7 @@ module.exports = {
 			test: /\.scss$/,
 			use: extractSCSS.extract({
 				fallback: 'style-loader',
-				use: ['css-loader', 'sass-loader']
+				use: ['css-loader?modules', 'sass-loader']
 			})
 		}, {
 			test: /\.(png|svg|jpg|gif)$/,
@@ -62,6 +62,7 @@ module.exports = {
 				loader: 'file-loader',
 				options: {
 					name: '[name].[ext]',
+					publicPath: '../',
 					outputPath: 'font/'
 				}
 			}]
