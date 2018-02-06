@@ -18,6 +18,8 @@ class MainLogo extends React.Component {
 	}
 }
 
+const emailRegExp = /^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
+
 const LoginInput = props => {
 	if (props.show === false) {
 		return null
@@ -27,7 +29,7 @@ const LoginInput = props => {
         	<span className={`input-group-addon ${style.inputGroupAddon}`}>
 				<i className={`fa ${props.icon}`}></i>
         	</span>
-        	<input type="text" required placeholder={props.placeholder} onChange={props.onChange} name={props.name} className={`form-control ${style.formControl} input-sm`} />
+        	<input type={props.type} required placeholder={props.placeholder} onChange={props.onChange} name={props.name} className={`form-control ${style.formControl} input-sm`} />
       	</div>
 	)
 }
@@ -37,7 +39,7 @@ const LoginButton = props => {
 		return null
 	}
 	return (
-		<button type="submit" className="btn btn-info btn-lg btn-block form-group" disabled={props.disabled}>{props.innerHtml}</button>
+		<button type="button" className="btn btn-info btn-lg btn-block form-group" disabled={props.disabled} onClick={props.onClick}>{props.innerHtml}</button>
 	)
 }
 
@@ -47,9 +49,32 @@ const LoginLink = props => {
 	}
 	return (
 		<div className={`${style.forgottenPassword} ${props.textAlgin}`}>
-			<p><a className="btn btn-link btn-sm">{props.text}</a></p>
+			<p><a className="btn btn-link btn-sm" onClick={props.onClick}>{props.text}</a></p>
         	<p><a target="_blank" className="btn btn-link btn-sm"></a></p>
       	</div>
+	)
+}
+
+const Remember = props => {
+	if (props.show === false) {
+		return null
+	}
+	return (
+		<div className="form-group">
+        	<label className="input-sm">
+          		<input type="checkbox" name="remember" value={props.value} onChange={props.onChange}/>
+          		记住我的信息
+        	</label>
+      	</div>
+	)
+}
+
+const LoginError = props => {
+	if (props.show === false) {
+		return null
+	}
+	return (
+		<div className="alert alert-danger">{props.text}</div>
 	)
 }
 
@@ -64,14 +89,17 @@ class Login extends React.Component {
 			passWordShow: true,
 			emailShow: false,
 			loginShow: true,
-			resetEmailShow: false,
+			resetPasswordShow: false,
+			rememberMeShow: true,
 			forgetPasswordLinkShow: true,
 			loginLinkShow: false,
 			userError: false,
 			passWordError: false,
 			emailError: false,
+			certificateError: false,
+			EmailAddressError: false,
 			rememberMe: false,
-			error: false
+			EmailAddressNotExist: false
 		}
 		if (localStorage.getItem("_db") !== null) {
 			axios({
@@ -102,7 +130,7 @@ class Login extends React.Component {
 				}
 				this.setState({
 					user: event.target.value,
-					error: false
+					certificateError: false
 				});
 				break;
 			case 'passWord':
@@ -117,7 +145,30 @@ class Login extends React.Component {
 				}
 				this.setState({
 					passWord: event.target.value,
-					error: false
+					certificateError: false
+				});
+				break;
+			case 'email':
+				if (event.target.value === '') {
+					this.setState({
+						emailError: true,
+					});
+				} else {
+					this.setState({
+						emailError: false
+					});
+				}
+				if (emailRegExp.test(event.target.value) || event.target.value === '') {
+					this.setState({
+						EmailAddressError: false
+					});
+				} else {
+					this.setState({
+						EmailAddressError: true
+					});
+				}
+				this.setState({
+					email: event.target.value
 				});
 				break;
 			case 'rememberMe':
@@ -129,53 +180,101 @@ class Login extends React.Component {
 		}
 	}
 
-	handleSubmit(event) {
-		let db = base64.encode('xueteng1' + '/' + this.state.user + ':' + this.state.passWord)
-		event.preventDefault();
-		axios({
-				method: 'get',
-				url: 'https://xueteng1.quarkioe.com/user/currentUser',
-				headers: {
-					UseXBasic: true,
-					Authorization: 'Basic ' + db
-				}
-			})
-			.then(res => {
-				if (this.state.rememberMe === true) {
-					localStorage.setItem('_db', db);
-				}
-				sessionStorage.setItem('_db', db);
-				window.location = 'https://xueteng1.quarkioe.com'
-			})
-			.catch(error => this.setState({
-				error: true,
-			}))
+	handleSubmit(name, event) {
+		switch (name) {
+			case 'login':
+				let db = base64.encode('xueteng1' + '/' + this.state.user + ':' + this.state.passWord)
+				axios({
+						method: 'get',
+						url: 'https://xueteng1.quarkioe.com/user/currentUser',
+						headers: {
+							UseXBasic: true,
+							Authorization: 'Basic ' + db
+						}
+					})
+					.then(res => {
+						if (this.state.rememberMe === true) {
+							localStorage.setItem('_db', db);
+						}
+						sessionStorage.setItem('_db', db);
+						window.location = 'https://xueteng1.quarkioe.com'
+					})
+					.catch(error => this.setState({
+						certificateError: true,
+					}))
+				break;
+			case 'resetPassword':
+				break;
+			default:
+				break
+		}
 	}
 
-	handleClick() {
-
+	handleClick(name, event) {
+		switch (name) {
+			case 'forgetPasswordLinkShow':
+				this.setState({
+					user: '',
+					passWord: '',
+					email: '',
+					userShow: false,
+					passWordShow: false,
+					emailShow: true,
+					loginShow: false,
+					resetPasswordShow: true,
+					rememberMeShow: false,
+					forgetPasswordLinkShow: false,
+					loginLinkShow: true,
+					userError: false,
+					passWordError: false,
+					emailError: false,
+					certificateError: false,
+					EmailAddressError: false,
+					rememberMe: false,
+					EmailAddressNotExist: false
+				})
+				break
+			case 'loginLinkShow':
+				this.setState({
+					user: '',
+					passWord: '',
+					email: '',
+					userShow: true,
+					passWordShow: true,
+					emailShow: false,
+					loginShow: true,
+					resetPasswordShow: false,
+					rememberMeShow: true,
+					forgetPasswordLinkShow: true,
+					loginLinkShow: false,
+					userError: false,
+					passWordError: false,
+					emailError: false,
+					certificateError: false,
+					EmailAddressError: false,
+					rememberMe: false,
+					EmailAddressNotExist: false
+				})
+				break
+		}
 	}
 
 	render() {
 		return (
 			<div className="clearfix" style={{marginBottom:'15px'}}>
-				<form onSubmit={this.handleSubmit.bind(this)}>
-					<LoginInput show={this.state.userShow} error={this.state.userError} icon={'fa-user'} placeholder={'用户名'} onChange={this.handleChange.bind(this,'user')} name={'user'} />
-					<LoginInput show={this.state.passWordShow} error={this.state.passWordError} icon={'fa-lock'} placeholder={'密码'} onChange={this.handleChange.bind(this,'passWord')} name={'passWord'} />
-					<LoginInput show={this.state.emailShow} error={this.state.email} icon={'fa-envelope'} placeholder={'邮件地址'} onChange={this.handleChange.bind(this,'email')} name={'email'} />
-      				<div className="form-group">
-        				<label className="c8y-checkbox input-sm">
-          					<input type="checkbox" name="remember" value={this.state.rememberMe} onChange={this.handleChange.bind(this,'rememberMe')}/>
-          					<span></span>
-          					记住我的信息
-        				</label>
-      				</div>
-      				<LoginButton show={this.state.loginShow} disabled={this.state.user===""?'disabled':(this.state.passWord===""?'disabled':false)} innerHtml={'登录'} />
-      				<LoginButton show={this.state.resetEmailShow} disabled={this.state.user===""?'disabled':(this.state.passWord===""?'disabled':false)} innerHtml={'重置密码'} />
-      				<LoginLink show={this.state.forgetPasswordLinkShow} textAlgin={'text-center'} text={'忘记密码？'} />
-      				<LoginLink show={this.state.loginLinkShow} textAlgin={'text-right'} text={'登陆'} />
+				<form>
+					<LoginInput type={'text'} show={this.state.userShow} error={this.state.userError} icon={'fa-user'} placeholder={'用户名'} onChange={this.handleChange.bind(this,'user')} name={'user'} />
+					<LoginInput type={'password'} show={this.state.passWordShow} error={this.state.passWordError} icon={'fa-lock'} placeholder={'密码'} onChange={this.handleChange.bind(this,'passWord')} name={'passWord'} />
+					<LoginInput type={'email'} show={this.state.emailShow} error={this.state.emailError} icon={'fa-envelope'} placeholder={'邮件地址'} onChange={this.handleChange.bind(this,'email')} name={'email'} />
+      				<Remember show={this.state.rememberMeShow} value={this.state.rememberMe} onClick={this.handleChange.bind(this,'rememberMe')} />
+      				<LoginButton show={this.state.loginShow} disabled={this.state.user===""?'disabled':(this.state.passWord===""?'disabled':false)} innerHtml={'登录'} onClick={this.handleSubmit.bind(this,'login')} />
+      				<LoginButton show={this.state.resetPasswordShow} disabled={this.state.email===''?'disabled':false} innerHtml={'重置密码'} onClick={this.handleSubmit.bind(this,'resetPassword')} />
+      				<LoginLink show={this.state.forgetPasswordLinkShow} textAlgin={'text-center'} text={'忘记密码？'} onClick={this.handleClick.bind(this,'forgetPasswordLinkShow')} />
+      				<LoginLink show={this.state.loginLinkShow} textAlgin={'text-right'} text={'登陆'} onClick={this.handleClick.bind(this,'loginLinkShow')} />
       			</form>
-      			<div className={`alert alert-danger ${this.state.error?style.show:style.false}`}>Invalid credentials!</div>
+      			<LoginError show={this.state.certificateError} text={'凭证无效'}/>
+      			<LoginError show={this.state.EmailAddressError} text={'邮件地址无效'}/>
+      			<LoginError show={this.state.EmailAddressNotExist} text={'不能用这个邮件地址重置密码：邮件地址不存在！'}/>
       		</div>
 		)
 	}
